@@ -44,8 +44,6 @@ class ApiClientImpl implements ApiClient {
         // Handle 401 Unauthorized
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          // In a real app, logic for token refresh would go here
-          // For this assessment, we'll just log and reject
           console.error('Unauthorized request:', originalRequest.url);
         }
 
@@ -80,5 +78,5 @@ class ApiClientImpl implements ApiClient {
 }
 
 // Export a singleton instance
-export const api = new ApiClientImpl(import.meta.env.VITE_API_BASE_URL || '/api');
+export const api = new ApiClientImpl(import.meta.env.VITE_API_BASE_URL || '');
 export default api;

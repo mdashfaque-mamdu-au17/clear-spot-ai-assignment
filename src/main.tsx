@@ -13,11 +13,11 @@ const queryClient = new QueryClient({
   },
 })
 
-async function enableMocking() {
+async function prepareApp() {
   if (import.meta.env.DEV) {
     try {
       const { worker } = await import('./mocks/browser')
-      return await worker.start({
+      await worker.start({
         onUnhandledRequest: 'bypass',
       })
     } catch (error) {
@@ -26,7 +26,7 @@ async function enableMocking() {
   }
 }
 
-enableMocking().then(() => {
+prepareApp().then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
