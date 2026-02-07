@@ -45,6 +45,27 @@ class ApiClientImpl implements ApiClient {
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
           console.error('Unauthorized request:', originalRequest.url);
+          window.dispatchEvent(new CustomEvent('api-error', { 
+            detail: { message: 'Session expired. Please log in again.', type: 'error' } 
+          }));
+        } else if (error.response) {
+          // Handle other API errors (400, 403, 404, 500)
+          const status = error.response.status;
+          let message = 'An unexpected error occurred.';
+          
+          if (status === 400) message = 'Bad request. Please check your data.';
+          if (status === 403) message = 'You do not have permission to perform this action.';
+          if (status === 404) message = 'Resource not found.';
+          if (status >= 500) message = 'Server error. Please try again later.';
+
+          window.dispatchEvent(new CustomEvent('api-error', { 
+            detail: { message, type: 'error' } 
+          }));
+        } else if (error.request) {
+          // Handle Network errors
+          window.dispatchEvent(new CustomEvent('api-error', { 
+            detail: { message: 'Network error. Please check your connection.', type: 'error' } 
+          }));
         }
 
         return Promise.reject(error);

@@ -22,6 +22,22 @@ export const handlers = [
       },
     });
   }),
+
+  http.put('/api/sites/:id', async ({ params, request }) => {
+    const { id } = params;
+    const body = await request.json() as { name: string };
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const siteIndex = sites.findIndex(s => s.id === id);
+    if (siteIndex > -1) {
+      sites[siteIndex].name = body.name;
+      return HttpResponse.json(sites[siteIndex]);
+    }
+
+    return new HttpResponse(null, { status: 404 });
+  }),
 ];
 
 export const worker = setupWorker(...handlers);

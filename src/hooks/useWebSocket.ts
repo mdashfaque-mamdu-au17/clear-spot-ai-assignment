@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useToast } from '../context/ToastContext';
 
 interface WebSocketHookReturn<T> {
   isConnected: boolean;
@@ -13,6 +14,7 @@ export function useWebSocket<T>(url: string): WebSocketHookReturn<T> {
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const isComponentMounted = useRef(true);
+  const { showToast } = useToast();
 
   const connect = useCallback(() => {
     if (socketRef.current?.readyState === WebSocket.OPEN) return;
@@ -79,12 +81,14 @@ export function useWebSocket<T>(url: string): WebSocketHookReturn<T> {
 
     const handleOnline = () => {
       console.log('Browser online, attempting reconnect...');
+      showToast('Connection restored. Reconnecting...', 'success');
       reconnectAttemptsRef.current = 0;
       connect();
     };
 
     const handleOffline = () => {
       console.log('Browser offline, reflecting state');
+      showToast('No internet connection. Monitoring paused.', 'error');
       setStatus('disconnected');
       if (socketRef.current) {
         socketRef.current.close();
