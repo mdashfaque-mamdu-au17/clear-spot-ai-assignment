@@ -14,6 +14,17 @@ The focus of this implementation is not just visual design, but **data handling,
 
 ---
 
+## 📸 Preview
+
+<p align="center">
+  <img src="./screenshot-1.png" width="48%" alt="Dashboard Overview" />
+  <img src="./screenshot-2.png" width="48%" alt="Real-time Alarms" />
+</p>
+
+_The AgenticMesh Dashboard: Seamlessly integrating operational site data with a real-time system-wide alarm feed._
+
+---
+
 ## Key Features & Implementation Details
 
 ### 1. Site Listing & Data Fetching
