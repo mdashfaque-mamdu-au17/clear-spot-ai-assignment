@@ -6,11 +6,14 @@ describe('ApiClient', () => {
   let mock: MockAdapter;
 
   beforeEach(() => {
-    mock = new MockAdapter((api as any).instance);
+    // Access the private instance for testing purposes
+    // @ts-ignore - accessing private field for testing
+    mock = new MockAdapter(api.instance);
   });
 
   afterEach(() => {
     mock.reset();
+    vi.restoreAllMocks();
   });
 
   it('should include the auth token in headers when set', async () => {
@@ -25,28 +28,63 @@ describe('ApiClient', () => {
   });
 
   it('should handle successful GET requests', async () => {
-    const data = { id: 1, name: 'Test' };
-    mock.onGet('/data').reply(200, data);
+    const data = { id: '1', name: 'Test Site' };
+    mock.onGet('/sites/1').reply(200, data);
 
-    const result = await api.get('/data');
+    const result = await api.get('/sites/1');
     expect(result).toEqual(data);
   });
 
-  it('should handle POST requests with data', async () => {
+  it('should dispatch api-error event on 401 Unauthorized', async () => {
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    mock.onGet('/protected').reply(401);
+
+    try {
+      await api.get('/protected');
+    } catch (e) {
+    }
+
+    expect(dispatchSpy).toHaveBeenCalled();
+    const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
+    expect(event.type).toBe('api-error');
+    expect(event.detail.message).toContain('Session expired');
+  });
+
+  it('should dispatch api-error event on 500 Server Error', async () => {
+    const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+    mock.onGet('/error').reply(500);
+
+    try {
+      await api.get('/error');
+    } catch (e) {
+    }
+
+    expect(dispatchSpy).toHaveBeenCalled();
+    const event = dispatchSpy.mock.calls[0][0] as CustomEvent;
+    expect(event.type).toBe('api-error');
+    expect(event.detail.message).toContain('Server error');
+  });
+
+  it('should handle POST requests', async () => {
     const postData = { name: 'New Site' };
-    mock.onPost('/sites', postData).reply(201, { id: '123', ...postData });
+    mock.onPost('/sites').reply(201, { id: '123', ...postData });
 
     const result = await api.post('/sites', postData);
     expect(result).toEqual({ id: '123', ...postData });
   });
 
-  it('should handle 401 errors and log them', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    mock.onGet('/unauthorized').reply(401);
+  it('should handle PUT requests', async () => {
+    const updateData = { name: 'Updated Site' };
+    mock.onPut('/sites/1').reply(200, { id: '1', ...updateData });
 
-    await expect(api.get('/unauthorized')).rejects.toThrow();
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Unauthorized request'), expect.any(String));
-    
-    consoleSpy.mockRestore();
+    const result = await api.put('/sites/1', updateData);
+    expect(result).toEqual({ id: '1', ...updateData });
+  });
+
+  it('should handle DELETE requests', async () => {
+    mock.onDelete('/sites/1').reply(204);
+
+    const result = await api.delete('/sites/1');
+    expect(result).toBeUndefined();
   });
 });

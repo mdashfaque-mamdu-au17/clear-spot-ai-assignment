@@ -58,8 +58,7 @@ const SiteCard: React.FC<SiteCardProps> = ({ site }) => {
       return { previousSites };
     },
     // If the mutation fails, use the context returned from onMutate to roll back
-    onError: (err, _updatedName, context) => {
-      console.error('Update failed:', err);
+    onError: (_err, _updatedName, context) => {
       showToast(`Failed to update ${site.name}`, 'error');
       if (context?.previousSites) {
         queryClient.setQueryData(['sites'], context.previousSites);

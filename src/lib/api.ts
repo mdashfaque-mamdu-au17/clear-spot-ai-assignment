@@ -1,13 +1,25 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 
+/**
+ * ApiClient interface defining the contract for the singleton instance.
+ */
 interface ApiClient {
+  /** Sets the Bearer token for all subsequent requests */
   setToken(token: string): void;
+  /** Performs a GET request */
   get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<T>;
+  /** Performs a POST request */
   post<T>(endpoint: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  /** Performs a PUT request */
   put<T>(endpoint: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  /** Performs a DELETE request */
   delete<T>(endpoint: string, config?: AxiosRequestConfig): Promise<T>;
 }
 
+/**
+ * Robust implementation of the ApiClient using Axios.
+ * Includes interceptors for auth headers and global error dispatching.
+ */
 class ApiClientImpl implements ApiClient {
   private instance: AxiosInstance;
   private token: string | null = null;
@@ -44,7 +56,6 @@ class ApiClientImpl implements ApiClient {
         // Handle 401 Unauthorized
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          console.error('Unauthorized request:', originalRequest.url);
           window.dispatchEvent(new CustomEvent('api-error', { 
             detail: { message: 'Session expired. Please log in again.', type: 'error' } 
           }));

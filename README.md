@@ -1,73 +1,98 @@
-# React + TypeScript + Vite
+# ClearSpot.ai – Frontend Technical Assessment
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This repository contains my submission for the **Frontend Engineer technical assessment** at ClearSpot.ai.
 
-Currently, two official plugins are available:
+The goal of this exercise was to build a small but realistic dashboard that demonstrates my approach to **API-driven UI development, real-time updates, error handling, and overall code structure** in a production-like React application.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## What I Built
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+A simplified **power generation monitoring dashboard** that displays operational sites along with a real-time stream of system alarms.
 
-## Expanding the ESLint configuration
+The focus of this implementation is not just visual design, but **data handling, resilience, and user experience clarity**.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Key Features & Implementation Details
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 1. Site Listing & Data Fetching
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Implemented site listing using **React Query** for efficient server-state management.
+- Added **pagination** to simulate handling larger datasets (50+ sites).
+- Each site card displays:
+  - Site status
+  - Total capacity
+  - A visual capacity indicator
+- API responses are mocked using **Mock Service Worker (MSW)** to keep the project self-contained while behaving like a real backend.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+**Why:**  
+React Query simplifies caching, background refetching, and error handling, making server state predictable and scalable.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 2. Real-time Alarms (WebSocket Simulation)
+
+- Simulated a real-time alarm feed using a **custom WebSocket hook**.
+- Implemented:
+  - Auto-reconnect with exponential backoff
+  - Connection state awareness
+- Alarms appear live in a sidebar with severity-based styling.
+- Users can acknowledge alarms, with immediate UI feedback.
+
+**Why:**  
+This mirrors real-world dashboards where systems must gracefully handle connection drops and live updates.
+
+---
+
+### 3. Error Handling & UX Resilience
+
+- Added a **global error boundary** to prevent full application crashes.
+- Centralized API error handling for common HTTP statuses (400 / 403 / 404 / 500).
+- Implemented a **toast notification system** for:
+  - API failures
+  - Network connectivity changes
+  - Offline/online status updates
+
+**Why:**  
+Clear feedback helps users understand what’s happening instead of guessing when something fails.
+
+---
+
+### 4. Optimistic Updates
+
+- Implemented **optimistic UI updates** when editing site names.
+- The UI updates immediately while the mock API simulates network latency.
+- Automatic rollback is handled if the update fails.
+
+**Why:**  
+This improves perceived performance and reflects patterns used in real production systems.
+
+---
+
+## Tech Stack
+
+- **React 19** + **TypeScript**
+- **Vite**
+- **Tailwind CSS**
+- **TanStack Query (React Query v5)**
+- **Mock Service Worker (MSW)**
+- **Axios**
+- **Lucide Icons**
+
+---
+
+## Running the Project Locally
+
+### Requirements
+
+- Node.js 18+
+- npm or yarn
+
+### Setup
+
+```bash
+npm install
+npm run dev   # Start dashboard
+npm run test  # Run API unit tests
 ```

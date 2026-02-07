@@ -26,7 +26,6 @@ export function useWebSocket<T>(url: string): WebSocketHookReturn<T> {
       socketRef.current = ws;
 
       ws.onopen = () => {
-        console.log('WebSocket Connected');
         if (isComponentMounted.current) {
           setStatus('connected');
           reconnectAttemptsRef.current = 0;
@@ -41,36 +40,30 @@ export function useWebSocket<T>(url: string): WebSocketHookReturn<T> {
             if (isComponentMounted.current) {
               setLastMessage(data);
             }
-          } else {
-            console.log('Received non-JSON WebSocket message:', event.data);
           }
         } catch (e) {
-          console.error('Failed to parse WebSocket message:', e);
         }
       };
 
-      ws.onclose = (event) => {
-        console.log('WebSocket Disconnected', event.reason);
+      ws.onclose = () => {
         if (isComponentMounted.current) {
           setStatus('disconnected');
-          // Reconnect logic: Don't reconnect if it was a clean close unless intended
-          if (!event.wasClean) {
-            const timeout = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-            setTimeout(() => {
-              if (isComponentMounted.current && navigator.onLine) {
-                reconnectAttemptsRef.current += 1;
-                connect();
-              }
-            }, timeout);
-          }
+          // Reconnect logic: Always attempt to reconnect if the component is still mounted
+          // This handles server idle timeouts or temporary network blips
+          const timeout = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
+          setTimeout(() => {
+            if (isComponentMounted.current && navigator.onLine) {
+              reconnectAttemptsRef.current += 1;
+              connect();
+            }
+          }, timeout);
         }
       };
 
-      ws.onerror = (error) => {
-        console.error('WebSocket Error:', error);
+      ws.onerror = () => {
+        // handled via ws.onclose and status
       };
     } catch (error) {
-      console.error('WebSocket connection failed:', error);
       setStatus('disconnected');
     }
   }, [url]);
@@ -80,14 +73,12 @@ export function useWebSocket<T>(url: string): WebSocketHookReturn<T> {
     connect();
 
     const handleOnline = () => {
-      console.log('Browser online, attempting reconnect...');
       showToast('Connection restored. Reconnecting...', 'success');
       reconnectAttemptsRef.current = 0;
       connect();
     };
 
     const handleOffline = () => {
-      console.log('Browser offline, reflecting state');
       showToast('No internet connection. Monitoring paused.', 'error');
       setStatus('disconnected');
       if (socketRef.current) {
@@ -111,8 +102,6 @@ export function useWebSocket<T>(url: string): WebSocketHookReturn<T> {
   const sendMessage = useCallback((message: any) => {
     if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
-    } else {
-      console.error('WebSocket is not connected. Message not sent.');
     }
   }, []);
 

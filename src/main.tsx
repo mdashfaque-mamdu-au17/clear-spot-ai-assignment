@@ -22,8 +22,7 @@ async function prepareApp() {
       await worker.start({
         onUnhandledRequest: 'bypass',
       })
-    } catch (error) {
-      console.error('MSW failed to start:', error)
+    } catch (_error) {
     }
   }
 }
